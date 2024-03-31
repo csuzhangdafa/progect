@@ -10,30 +10,42 @@ func main() {
 	ctx := context.Background()
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr:	  "localhost:6379",
-		Password: "", // no password set
-		DB:		  0,  // use default DB
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
 	})
 
-	err := rdb.Set(ctx, "key", "value", 0).Err()
-	if err != nil {
-		panic(err)
+	hashkeys := "user_profile"
+	fieldandvalues := map[string]interface{}{
+		"name":"alna",
+		"emile":"2222@111",
+		"age":30,
+	}
+	err := rdb.HMSet(ctx,hashkeys,fieldandvalues).Err()
+	if err != nil{
+		fmt.Println(err)
+	}
+	fmt.Println("Hash data stored successfully")
+
+	result,err := rdb.HGetAll(ctx,hashkeys).Result()
+	if err!= nil{
+		fmt.Println(err)
+		return
 	}
 
-	val, err := rdb.Get(ctx, "key").Result()
-	if err != nil {
-		panic(err)
+	fmt.Println("Hash data:")
+    for field, value := range result {
+        fmt.Printf("%s: %s\n", field, value)
+    }
+/*
+	err := rdb.Set(ctx,"address","长沙",0).Err()
+	if err != nil{
+		print(err)
 	}
-	fmt.Println("key", val)
-
-	val2, err := rdb.Get(ctx, "key2").Result()
-	if err == redis.Nil {
-		fmt.Println("key2 does not exist")
-	} else if err != nil {
-		panic(err)
-	} else {
-		fmt.Println("key2", val2)
+	val , err := rdb.Get(ctx,"address").Result()
+	if err!= nil{
+		print(err)
 	}
-	// Output: key value
-	// key2 does not exist
+	fmt.Println("address",val)
+*/
 }

@@ -33,25 +33,27 @@ for index, value := range collection {
 */
 
 package main
-import(
+
+import (
 	"fmt"
 )
-func main(){
+
+func main() {
 
 	//定义，make以后使用
 	var intchan chan int
-	intchan = make(chan int,3)
-	fmt.Printf("intchan的值=%v\n",intchan)
+	intchan = make(chan int, 3)
+	fmt.Printf("intchan的值=%v\n", intchan)
 
 	//写入数据
-	intchan<- 10
-	num:=211
-	intchan<-num
+	intchan <- 10
+	num := 211
+	intchan <- num
 
-	fmt.Printf("channel len= %v cap=%v \n", len(intchan), cap(intchan))//长度2，容量3
-    
-    //读取数据，取数据的时候也可以不接收
-    var num2 int
+	fmt.Printf("channel len= %v cap=%v \n", len(intchan), cap(intchan)) //长度2，容量3
+
+	//读取数据，取数据的时候也可以不接收
+	var num2 int
 	num2 = <-intchan
 	fmt.Println("num2=", num2)
 	fmt.Printf("channel len= %v cap=%v \n", len(intchan), cap(intchan))
@@ -75,10 +77,5 @@ func main(){
 	m22 := <-mapChan
 
 	fmt.Println(m11, m22)
-
-	var allChan chan interface{}//此管道可以接受任何类型的数据
-	var chan2 chan<- int//声明为只写
-	var chan3 <-chan int//声明为只读
-
 
 }

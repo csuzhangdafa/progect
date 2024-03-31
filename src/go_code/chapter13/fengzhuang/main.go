@@ -1,12 +1,11 @@
 package main
-import(
+
+import (
 	"fmt"
-	"go_project/pkg/src/go_code/chapter13/model"
+	"go_code/chapter13/model"
 )
 
-
 //面向对象编程三大特征，封装，继承，多态，golang也存在，只是设计和传统的oop语言不太相同
-
 
 /*封装就是把抽象出来的字段和对字段的操作封装在一起，数据被保护在其内部，
 程序的其他包只有通过被授权的操作（方法）才能对字段进行操作
@@ -25,11 +24,11 @@ func (var 结构体类型名) GetXxx{
 	return var.字段
 }*/
 
-func main(){
-    p := model.NewPerson("smith")
+func main() {
+	p := model.NewPerson("smith")
 	p.SetAge(18)
 	p.SetSal(5000)
 	fmt.Println(p)
-	fmt.Println(p.Name,"age=",p.GetAge(),"Sal=",p.GetSal())
+	fmt.Println(p.Name, "age=", p.GetAge(), "Sal=", p.GetSal())
 
 }
