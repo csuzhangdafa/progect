@@ -2,6 +2,7 @@ package login
 
 import (
 	"chatroom/common/message"
+	"chatroom/utils"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
@@ -53,7 +54,7 @@ func Login(userid int, userpwd string) (err error) {
 
 	//data就是我们要发送的数据
 	//先把data的长度发给服务器
-	//获取到data的长度->转成一个表示长度的byte切片
+	//获取到data的长度转成一个表示长度的byte切片
 	var pkglen uint32
 	pkglen = uint32(len(data))
 	var buf [4]byte
@@ -64,7 +65,33 @@ func Login(userid int, userpwd string) (err error) {
 		return
 	}
 
-	fmt.Println("客户端发送消息的长度=%d", len(data))
+	//fmt.Fprintln(os.Stdout, []any{"客户端发送消息的长度=%d", len(data)}...)
 
+	//发送消息本身
+	_, err = conn.Write(data)
+	if err != nil {
+		fmt.Println("conn.write(data) fail", err)
+		return
+	}
+
+	//休眠20
+	//time.Sleep(20 * time.Second)
+	//fmt.Println("休眠20s")
+
+	//处理服务器端返回的消息
+	mes, err = utils.ReadPkg(conn)
+	if err != nil {
+		fmt.Println("readpkg(conn)err = ", err)
+		return
+	}
+
+	//将mes的data部分反序列化成loginresmes
+	var loginResMes message.LoginResMes
+	err = json.Unmarshal([]byte(mes.Data), &loginResMes)
+	if loginResMes.Code == 200 {
+		fmt.Println("登陆成功")
+	} else if loginResMes.Code == 500 {
+		fmt.Println(loginResMes.Error)
+	}
 	return
 }
