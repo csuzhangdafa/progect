@@ -1,7 +1,7 @@
 package main
 
 import (
-	"chatroom/login"
+	"chatroom/client/process"
 	"fmt"
 )
 
@@ -24,7 +24,13 @@ func main() {
 		switch key {
 		case 1:
 			fmt.Println("登录聊天系统")
-			loop = false
+			fmt.Println("请输入用户id")
+			fmt.Scanf("%d\n", &userid)
+			fmt.Println("请输入用户密码")
+			fmt.Scanf("%s\n", &userpwd)
+			//loop = false
+			up := &process.Userprocess{}
+			up.Login(userid, userpwd)
 		case 2:
 			fmt.Println("注册用户")
 			loop = false
@@ -34,24 +40,5 @@ func main() {
 		default:
 			fmt.Println("你输入有误，请重新输入1-3")
 		}
-	}
-
-	//根据用户的输入，选择新的提示信息
-	if key == 1 {
-		fmt.Println("请输入用户id")
-		fmt.Scanf("%d\n", &userid)
-		fmt.Println("请输入用户密码")
-		fmt.Scanf("%s\n", &userpwd)
-
-		err := login.Login(userid, userpwd)
-		if err != nil {
-			fmt.Println("登陆失败")
-			fmt.Println(err)
-		} else {
-			fmt.Println("登陆成功")
-		}
-		//登陆函数写到另一个文件
-	} else if key == 2 {
-		fmt.Println("用户注册")
 	}
 }

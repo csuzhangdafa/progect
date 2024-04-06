@@ -1,16 +1,22 @@
-package login
+package process
 
 import (
+	"chatroom/client/utils"
 	"chatroom/common/message"
-	"chatroom/utils"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"net"
 )
 
+type Userprocess struct {
+	//暂时不需要字段
+}
+
+//关联一个用户登陆的方法
+
 // 登录函数
-func Login(userid int, userpwd string) (err error) {
+func (this *Userprocess) Login(userid int, userpwd string) (err error) {
 
 	//定协议
 	//fmt.Println("userid = %d userpwd = %s\n",userid,userpwd)
@@ -65,7 +71,7 @@ func Login(userid int, userpwd string) (err error) {
 		return
 	}
 
-	//fmt.Fprintln(os.Stdout, []any{"客户端发送消息的长度=%d", len(data)}...)
+	fmt.Printf("客户端发送的消息长度= %d 内容=%s", len(data), string(data))
 
 	//发送消息本身
 	_, err = conn.Write(data)
@@ -79,7 +85,10 @@ func Login(userid int, userpwd string) (err error) {
 	//fmt.Println("休眠20s")
 
 	//处理服务器端返回的消息
-	mes, err = utils.ReadPkg(conn)
+	tf := &utils.Transfer{
+		Conn: conn,
+	}
+	mes, err = tf.ReadPkg()
 	if err != nil {
 		fmt.Println("readpkg(conn)err = ", err)
 		return
@@ -89,7 +98,17 @@ func Login(userid int, userpwd string) (err error) {
 	var loginResMes message.LoginResMes
 	err = json.Unmarshal([]byte(mes.Data), &loginResMes)
 	if loginResMes.Code == 200 {
-		fmt.Println("登陆成功")
+		//fmt.Println("登陆成功")
+
+		//我们还要在客户端启动一个协程
+		//该协程保持和服务器的通讯，如果有数据推送给客户端，则接受并显示
+		go ProcesserMes(conn)
+
+		//1.循环显示登陆成功的菜单
+		for {
+			Showmenu()
+		}
+
 	} else if loginResMes.Code == 500 {
 		fmt.Println(loginResMes.Error)
 	}
