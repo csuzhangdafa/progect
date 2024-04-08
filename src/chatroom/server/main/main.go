@@ -1,10 +1,17 @@
 package main
 
 import (
+	"chatroom/server/model"
 	"chatroom/server/processer"
+	"chatroom/server/redi"
 	"fmt"
 	"net"
+	"time"
+
+	"github.com/redis/go-redis/v9"
 )
+
+var Client *redis.Client
 
 // 处理和客户端的通讯
 func process(conn net.Conn) {
@@ -22,7 +29,22 @@ func process(conn net.Conn) {
 	}
 }
 
+// 完成对UserDao的初始化任务
+func initUserDao() {
+	//这里的pool本身就是一个全局变量
+	//注意一个初始化的顺序问题
+	//initPool，在initUserDao
+	//modle.MyUserDao = modle.NewUserDao(pool)
+	model.MyUserDao = model.NewUserDao(redi.Client)
+	fmt.Println("初始化连接")
+}
+
 func main() {
+
+	//服务器启动以后就初始化redis连接池
+	redi.InitRedisPool("localhost:6379", "", 0, 16, 16, 300*time.Second)
+	initUserDao()
+
 	fmt.Println("（服务器改进新的结构）服务器在8889端口监听")
 	listen, err := net.Listen("tcp", "0.0.0.0:8889")
 	defer listen.Close()

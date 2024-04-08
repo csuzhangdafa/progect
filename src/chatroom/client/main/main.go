@@ -8,6 +8,7 @@ import (
 // 用户id与用户密码
 var userid int
 var userpwd string
+var username string
 
 func main() {
 
@@ -29,11 +30,21 @@ func main() {
 			fmt.Println("请输入用户密码")
 			fmt.Scanf("%s\n", &userpwd)
 			//loop = false
+			//完成登录，创建一个UserProcess实例
 			up := &process.Userprocess{}
 			up.Login(userid, userpwd)
 		case 2:
 			fmt.Println("注册用户")
-			loop = false
+			fmt.Println("请输入用户id")
+			fmt.Scanf("%d\n", &userid)
+			fmt.Println("请输入用户密码")
+			fmt.Scanf("%s\n", &userpwd)
+			fmt.Println("请输入用户名字")
+			fmt.Scanf("%s\n", &username)
+			//loop = false
+			//完成注册，创建一个UserProcess实例
+			//up := &process.Userprocess{}
+
 		case 3:
 			fmt.Println("退出系统")
 			loop = false

@@ -1,9 +1,14 @@
 package message
 
+import (
+	"chatroom/server/model"
+)
+
 const (
-	LoginMestype    = "LoginMes"
-	LoginResMestype = "LoginResMes"
-	RegisterMestype = "RegisterMes"
+	LoginMestype       = "LoginMes"
+	LoginResMestype    = "LoginResMes"
+	RegisterMestype    = "RegisterMes"
+	RegisterResMestype = "RegisterResMes"
 )
 
 type Message struct {
@@ -24,4 +29,11 @@ type LoginResMes struct {
 }
 
 type RegisterMes struct {
+	//注册登录消息类型
+	User model.User //类型就是User结构体
+}
+
+type RegisterResMes struct {
+	Code  int    `json:"code"`  //400,占用，200表示注册成功
+	Error string `json:"error"` //返回错误信息
 }

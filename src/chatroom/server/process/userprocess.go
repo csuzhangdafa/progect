@@ -2,6 +2,7 @@ package process
 
 import (
 	"chatroom/common/message"
+	"chatroom/server/model"
 	"chatroom/server/utils"
 	"encoding/json"
 	"fmt"
@@ -31,14 +32,19 @@ func (this *Userprocess) Serverprocesslogin(mes *message.Message) (err error) {
 	//申明一个loginresmes,并完成赋值
 	var loginResMes message.LoginResMes
 
-	//如果id =100,密码=123456，认为合法，否则不合法
-	if loginMes.Userid == 100 && loginMes.Userpwd == "123456" {
-		//合法
-		loginResMes.Code = 200 //200成功
+	//现在需要到数据库中进行验证
+	//1.使用modle.Myuserdao到redis去验证
+	user, err := model.MyUserDao.Login(loginMes.Userid, loginMes.Userpwd)
+
+	if err != nil {
+		fmt.Println("开始比较-----")
+		loginResMes.Code = 500
+		loginResMes.Error = "用户不存在"
+		//我们先测试成功，再返回具体的错误信息
 	} else {
-		//不合法
-		loginResMes.Code = 500 //500不成功
-		loginResMes.Error = "用户不存在，请注册再使用..."
+		fmt.Println("开始比较")
+		loginResMes.Code = 200
+		fmt.Println(user, "登陆成功")
 	}
 
 	//将loginresmes序列化
