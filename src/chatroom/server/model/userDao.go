@@ -81,3 +81,27 @@ func (this *UserDao) Login(userid int, userpwd string) (user *User, err error) {
 
 	return
 }
+
+func (this *UserDao) Register(user *User) (err error) {
+
+	ctx := context.Background()
+	_, err = this.getUserByid(ctx, user.Userid)
+	if err == nil {
+		//如果err = nil说明在数据库中已经有了这个用户，返回错误
+		err = ERROR_USER_EXISTS
+		return
+	}
+
+	//这时，说明id没在redis，可以完成注册
+	data, err := json.Marshal(user)
+	if err != nil {
+		return
+	}
+
+	//入库
+	err = this.pool.HSet(ctx, "users", fmt.Sprintf("%d", user.Userid), data).Err()
+	if err != nil {
+		return
+	}
+	return
+}

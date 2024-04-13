@@ -5,10 +5,18 @@ import (
 )
 
 const (
-	LoginMestype       = "LoginMes"
-	LoginResMestype    = "LoginResMes"
-	RegisterMestype    = "RegisterMes"
-	RegisterResMestype = "RegisterResMes"
+	LoginMestype            = "LoginMes"
+	LoginResMestype         = "LoginResMes"
+	RegisterMestype         = "RegisterMes"
+	RegisterResMestype      = "RegisterResMes"
+	NotifyuserstatusmesType = "Notifyuserstatusmes"
+)
+
+// 定义几个用户状态的常量
+const (
+	Useronline = iota
+	Useroffline
+	Userbusystatus
 )
 
 type Message struct {
@@ -24,8 +32,9 @@ type LoginMes struct {
 }
 
 type LoginResMes struct {
-	Code  int    `json:"code"`  //返回状态码
-	Error string `json:"error"` //返回错误信息
+	Code    int    `json:"code"` //返回状态码
+	Userids []int  //增加字段保存用户id的切片
+	Error   string `json:"error"` //返回错误信息
 }
 
 type RegisterMes struct {
@@ -36,4 +45,12 @@ type RegisterMes struct {
 type RegisterResMes struct {
 	Code  int    `json:"code"`  //400,占用，200表示注册成功
 	Error string `json:"error"` //返回错误信息
+}
+
+//为了配合服务器端推送用户状态变化的消息
+//服务器主动推送，并不需要响应
+
+type Notifyuserstatusmes struct {
+	Userid int `json:"userid"` //用户id
+	Status int `json:"status"` //用户状态
 }

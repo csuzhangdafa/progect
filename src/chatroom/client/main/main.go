@@ -43,8 +43,8 @@ func main() {
 			fmt.Scanf("%s\n", &username)
 			//loop = false
 			//完成注册，创建一个UserProcess实例
-			//up := &process.Userprocess{}
-
+			up := &process.Userprocess{}
+			up.Register(userid, userpwd, username)
 		case 3:
 			fmt.Println("退出系统")
 			loop = false
