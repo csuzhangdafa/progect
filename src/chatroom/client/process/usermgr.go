@@ -1,6 +1,7 @@
 package process
 
 import (
+	"chatroom/client/modle"
 	"chatroom/common/message"
 	"fmt"
 )
@@ -8,6 +9,9 @@ import (
 //客户端要维护的map
 
 var onlineusers map[int]*message.User = make(map[int]*message.User, 10)
+
+// 定义全局变量Curuser,在用户登陆成功以后完成对Curser初始化
+var Curuser modle.Curuser
 
 // 编写一个方法，处理返回的信息
 func Updateuserstatus(notifyuserstatusmes *message.Notifyuserstatusmes) {

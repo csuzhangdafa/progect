@@ -18,14 +18,22 @@ func Showmenu() {
 	fmt.Println("------------3.消息列表------------")
 	fmt.Println("------------4.退出系统------------")
 	fmt.Println("------------请选择(1-4):------------")
+
 	var key int
+	var content string
+
+	//应为我们总是使用到smsprocess实例，因此我们将其定义在switch外部
+	smsprocess := &Smsprocess{}
 	fmt.Scanf("%d\n", &key)
 	switch key {
 	case 1:
 		//fmt.Println("显示用户在线列表")
 		outputonlineuser()
 	case 2:
-		fmt.Println("发送消息")
+		fmt.Println("你相对大家说点什么")
+		fmt.Scanf("%s\n", &content)
+		smsprocess.sendgroupmes(content)
+		//fmt.Println("发送消息")
 	case 3:
 		fmt.Println("消息列表")
 	case 4:

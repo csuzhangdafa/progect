@@ -16,6 +16,9 @@ type Processer struct {
 
 // 根据客户端发送的消息种类不同，决定用哪个函数来处理
 func (this *Processer) Serverprocessmes(mes *message.Message) (err error) {
+
+	//看看从客户端是否能接收到群发的消息
+	fmt.Println("mes=", mes)
 	switch mes.Type {
 	case message.LoginMestype:
 		//处理登录
