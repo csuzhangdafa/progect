@@ -33,6 +33,10 @@ func (this *Processer) Serverprocessmes(mes *message.Message) (err error) {
 			Conn: this.Conn,
 		}
 		err = up.Serverprocessregister(mes) //type:data
+	case message.Smsmestype:
+		//创建一个smsprocess转发群聊消息的实例
+		smsprocess := &process.Smeprocess{}
+		smsprocess.Sendgroupmes(mes)
 	default:
 		fmt.Println("消息类型不存在，无法处理")
 	}

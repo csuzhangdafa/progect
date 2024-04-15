@@ -58,7 +58,6 @@ func ProcesserMes(Conn net.Conn) {
 		}
 
 		//读取到数据下一步处理
-		//fmt.Printf("mes=%v", mes)
 		switch mes.Type {
 		case message.NotifyuserstatusmesType: //有人上线了
 
@@ -68,6 +67,8 @@ func ProcesserMes(Conn net.Conn) {
 			//2.把这个用户的信息保存到客户端的map[int]User中
 			Updateuserstatus(&notifyuserstatusmes)
 		//处理
+		case message.Smsmestype: //有人群发消息
+			outputgroupmes(&mes)
 		default:
 			fmt.Println("客户端返回了未知的消息类型")
 		}
