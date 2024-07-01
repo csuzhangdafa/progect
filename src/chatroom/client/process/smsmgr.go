@@ -17,7 +17,7 @@ func outputgroupmes(mes *message.Message) {
 	}
 
 	//显示
-	info := fmt.Sprintf("用户id:\t对大家说\t%s", smsmes.Userid, smsmes.Content)
+	info := fmt.Sprintf("用户id:\t%d对大家说\t%s", smsmes.Userid, smsmes.Content)
 	fmt.Println(info)
 
 }

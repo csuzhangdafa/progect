@@ -29,13 +29,16 @@ channel支持for–range的方式进行遍历
 for index, value := range collection {
     // 在这里处理index和value
 }
+var allChan chan interface{} 可以写入任何数据的变量
 
+协程控制
 */
 
 package main
 
 import (
 	"fmt"
+	"sync"
 )
 
 func main() {
@@ -78,4 +81,6 @@ func main() {
 
 	fmt.Println(m11, m22)
 
+	var group sync.WaitGroup
+	group.Add(2) //Add，有多少个任务要完成，Done每个任务完成后都调用,Wait等待所有任务完成，在所有任务完成前是阻塞的
 }

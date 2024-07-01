@@ -20,7 +20,7 @@ type Userprocess struct {
 func (this *Userprocess) Serverprocesslogin(mes *message.Message) (err error) {
 
 	//先从mes中取出mes.Data,直接反序列化成loginmes
-
+	//接受客户端数据，用于去数据库中验证
 	var loginMes message.LoginMes
 	err = json.Unmarshal([]byte(mes.Data), &loginMes)
 	if err != nil {
