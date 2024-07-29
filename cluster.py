@@ -1,130 +1,55 @@
-import csv
-from argparse import ArgumentParser
-import pandas as pd
-from scapy.all import *
+from pcapfile import savefile
+from pcapfile.protocols.linklayer import ethernet
+from pcapfile.protocols.network import ip
+from pcapfile.protocols.transport import tcp, udp
 import os
-from netzob.Import.PCAPImporter.PCAPImporter import PCAPImporter
 
+# 创建输出文件夹（如果不存在）
+def create_output_folder(folder):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
-def add_suffix_to_filename(filename, suffix):
-    # 获取文件所在的目录和原文件名
-    directory = os.path.dirname(filename)
-    base = os.path.basename(filename)
-    
-    # 分割原文件名为文件名和后缀
-    name, ext = os.path.splitext(base)
-    
-    # 创建新的文件名，把suffix添加到文件名的后面
-    new_name = name + "_" + suffix + ext
-    
-    # 如果原文件名包含目录，把目录添加回新的文件名
-    if directory:
-        new_name = os.path.join(directory, new_name)
+# 根据前四个字节的不同将 pcap 包分类并写入不同的 pcap 文件
+def classify_and_save_pcap(pcap_file, output_folder):
+    with open(pcap_file, 'rb') as f:
+        pcap = savefile.load_savefile(f, layers=4, verbose=True)
 
-    if not new_name.endswith(".pcap"):  # input 为文件夹
-        new_name = new_name + ".pcap"
-        
-    return new_name
+        for packet in pcap.packets:
+            # 解析以太网帧
+            eth_frame = ethernet.Ethernet(packet.raw())
+            
+            # 解析 IP 数据包
+            if isinstance(eth_frame.payload, ip.IP):
+                ip_packet = eth_frame.payload
+                
+                # 获取传输层数据
+                if isinstance(ip_packet.data, tcp.TCP):
+                    transport = ip_packet.data
+                elif isinstance(ip_packet.data, udp.UDP):
+                    transport = ip_packet.data
+                else:
+                    continue  # 不处理非 TCP 和 UDP 数据包
 
+                # 获取应用层数据
+                if hasattr(transport, 'data'):
+                    app_layer_data = transport.data
+                    first_four_bytes = app_layer_data[:4]
 
-def getOriginMessages(orig_messages_path):
-    orig_packets = []
-    if os.path.isfile(orig_messages_path):
-        orig_packets = PCAPImporter.readFile(orig_messages_path).values()
-    else:
-        files = os.listdir(orig_messages_path)
-        files.sort()
+                    # 构建分类键
+                    if len(first_four_bytes) >= 4:
+                        classification_key = first_four_bytes.hex()
 
-        for file in files:
-            filepath_input = os.path.join(orig_messages_path, file)
-            packet = PCAPImporter.readFile(filepath_input).values()
-            if not orig_packets:
-                orig_packets = packet
-            else:
-                orig_packets = orig_packets + packet
-    
-    return orig_packets
+                        # 创建对应分类的输出文件
+                        output_pcap_file = os.path.join(output_folder, f"{classification_key}.pcap")
 
-if __name__ == '__main__':
-    parser = ArgumentParser(
-        description='Re-Implementation of FieldHunter.')
-    parser.add_argument('pcapfilename', help='Filename of the PCAP to load.')
-    parser.add_argument('output', help='Filename of the output')
-    parser.add_argument('-i', '--interactive', help='Open ipython prompt after finishing the analysis.',
-                        action="store_true")
-    parser.add_argument('-d', '--debug', help='Enable debug output.', action="store_true")
-    parser.add_argument('-f', '--fuzz_messages_filepath', dest='fuzz_messages_filepath', default=None, help='increase in traffic')
-    args = parser.parse_args()
+                        # 写入数据包到对应的 pcap 文件
+                        with open(output_pcap_file, 'ab') as fout:
+                            fout.write(packet.raw())
 
-    # 原始流量
-    orig_messages = getOriginMessages(args.pcapfilename)
+# 使用示例
+if __name__ == "__main__":
+    input_pcap_file = 'your_input_pcap.pcap'  # 输入的 pcap 文件路径
+    output_folder = 'classified_pcaps'  # 输出的分类后 pcap 文件夹路径
 
-    with open(args.output, "w", newline="") as csvfile:
-        writer = csv.writer(csvfile)
-
-        # 写入 CSV 文件的表头
-        writer.writerow(["Message", "Category"])
-
-         # 遍历原始消息并写入 CSV 文件
-        for message in orig_messages:
-            # 提取消息的字节内容
-            message_content = bytes(message.data)  # 假设 data 属性包含消息的字节数据
-            # 将消息转换为十六进制字符串
-            hex_message = message_content.hex()
-            # 提取前四个字节作为分类
-            category = hex_message[:4]  # 假设每个消息至少有四个字节
-            # 写入 CSV 文件的一行
-            writer.writerow([hex_message, category])
-
-    print(f"Messages have been written to {args.output}")
-
-     # 读取刚刚写入的 CSV 文件
-    df = pd.read_csv(args.output)
-
-    # 创建一个字典来存储每个类别的文件名
-    category_files = {}
-
-    # 根据前四个字节对数据进行分类
-    categories = df['Category'].unique()
-    category_counts = {category: df[df['Category'] == category].shape[0] for category in categories}
-
-    # 打印每个类别的数量
-    print(f"Number of messages in each category:")
-    for category, count in category_counts.items():
-        print(f"{category}: {count}")
-
-     # 遍历每个类别
-    for category in categories:
-        # 选择特定类别的数据
-        category_df = df[df['Category'] == category]
-        # 生成每个类别的文件名
-        category_file = f"category_{category}.csv"
-        # 保存每个类别的数据到不同的 CSV 文件
-        category_files[category] = category_file
-        category_df.to_csv(category_file, index=False)
-    # 打印每个类别的文件路径
-    print(f"Data has been categorized and saved to separate CSV files:")
-    for category, file in category_files.items():
-        print(f"{category}: {file}")
-    
-    '''
-    # 保存聚类结果到新的 CSV 文件
-    clustered_output = args.output.replace('.csv', '_clustered.csv')
-    df.to_csv(clustered_output, index=False)
-
-    print(f"Clustered results have been written to {clustered_output}")
-
-    '''
-
-
-    '''
-    # 根据前四个字节对数据进行分类
-    categories = df['Category'].unique()
-    for category in categories:
-        category_df = df[df['Category'] == category]
-        # 保存每个类别的数据到不同的 CSV 文件
-        category_file = args.output.replace('.csv', f'_{category}.csv')
-        category_df.to_csv(category_file, index=False)
-
-    print(f"Data has been categorized based on the first four bytes.")
-'''
+    create_output_folder(output_folder)
+    classify_and_save_pcap(input_pcap_file, output_folder)
